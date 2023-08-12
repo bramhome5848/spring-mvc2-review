@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>리터럴</h1>
+<ul>
+    <!--    <li>"hello world!" = <span th:text="hello world!"></span></li>-->
+    <li>'hello' + ' world!' = <span th:text="'hello' + ' world!'"></span></li>
+    <li>'hello world!' = <span th:text="'hello world!'"></span></li>
+    <li>'hello ' + ${data} = <span th:text="'hello ' + ${data}"></span></li>
+    <li>리터럴 대체 |hello ${data}| = <span th:text="|hello ${data}|"></span></li>
+</ul>
+
+</body>
+</html>
+
+<!--
+* 리터럴 : 소스 코드상에 고정된 값을 말하는 용어
+- 문자 : 'hello' -> 타임리프에서 문자 리터럴은 항상 '' 작은 따옴표로 감싸야 함
+- 숫자 : 10
+- 불린 : true, false
+- null : null
+
+* 공백없이 이어진다면 하나의 의미있는 토큰으로 인지하여 작은 따옴표 생략이 가능 -> <span th:text="hello">
+- 룰: A-Z, a-z, 0-9, [], ., -, _
+-->
