@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<th:block th:each="user : ${users}">
+    <div>
+        사용자 이름1 <span th:text="${user.username}"></span>
+        사용자 나이1 <span th:text="${user.age}"></span>
+    </div>
+    <div>
+        요약 <span th:text="${user.username} + ' / ' + ${user.age}"></span>
+    </div>
+</th:block>
+</body>
+</html>
+
+<!--
+* 블록
+- <ht:block> 은 HTML 태그가 아닌 타임리프의 유일한 자체 태그
+- 타임리프의 특성상 HTML 태그안에 속성으로 기능을 정의해서 사용, 위의 예처럼(div 를 2개씩 반복) 사용하기 애매한 경우 사용
+- <th:block> 은 렌더링시 제거 됨
+-->
