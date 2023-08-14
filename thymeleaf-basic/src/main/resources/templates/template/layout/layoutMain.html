@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="template/layout/base :: common_header(~{::title},~{::link})">
+    <title>메인 타이틀</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/themes/smoothness/jquery-ui.css}">
+</head>
+<body>
+메인 컨텐츠
+</body>
+</html>
+
+<!--
+* 템플릿 레이아웃
+- 템플릿 조각이 -> 일부 코드 조각을 가지고와서 사용
+- 템플릿 레이아웃 -> 코드 조각을 레이아웃에 넘겨서 사용하는 방법
+- <head> 에 공통으로 사용하는 css , javascript 같은 정보들을 한 곳에 모아두고 사용하지만 각 페이지마다 필요한 정보를 더 추가해서 사용하고 싶을 경우 적용
+
+ex) common_header(~{::title},~{::link})
+-> ::title 은 현재 페이지의 title 태그들을 전달한다.
+-> ::link 는 현재 페이지의 link 태그들을 전달한다.
+-->

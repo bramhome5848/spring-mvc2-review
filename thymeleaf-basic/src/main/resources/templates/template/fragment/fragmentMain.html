@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>부분 포함</h1>
+<h2>부분 포함 insert</h2>
+<div th:insert="~{template/fragment/footer :: copy}"></div>
+<!-- th:insert 를 사용하면 현재 태그( div ) 내부에 추가 -->
+
+<h2>부분 포함 replace</h2>
+<div th:replace="~{template/fragment/footer :: copy}"></div>
+<!-- th:replace 를 사용하면 현재 태그( div )를 대체 -->
+
+<h2>부분 포함 단순 표현식</h2>
+<div th:replace="template/fragment/footer :: copy"></div>
+<!-- ~{...} 를 사용하는 것이 원칙이지만 템플릿 조각을 사용하는 코드가 단순하면 이 부분 생략 가능 -->
+
+<h1>파라미터 사용</h1>
+<div th:replace="~{template/fragment/footer :: copyParam ('데이터1', '데이터2')}"></div>
+</body>
+</html>
+
+<!--
+* 템플릿 조각
+- 웹 페이지를 개발할 때 발생하는 공통 영역이 많이 발생
+- 공통 부분의 코드를 복사해서 사용한다면 변경시 여러 페이지 수정이 필요 -> 비효율적
+- 타임리프는 이런 문제를 해결하기 위해 템플릿 조각과 레이아웃 기능을 지원
+
+* template/fragment/footer :: copy :
+- template/fragment/footer.html 템플릿에 있는 th:fragment="copy" 라는 부분을 템플릿 조각으로 가져와 사용한다는 의미
+-->
