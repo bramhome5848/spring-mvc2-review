@@ -34,6 +34,35 @@
 
         <hr class="my-4">
 
+        <!-- single checkbox -->
+        <div>판매 여부</div>
+        <div>
+            <div class="form-check">
+                <!--
+                <input type="checkbox" id="open" name="open" class="form-check-input">
+                <input type="hidden" name="_open" value="on"/>-->
+                <label for="open" class="form-check-label">판매 오픈</label>
+                <!--타임리프로 변경 -> hidden 필드, _open 자동 생성 -->
+                <input type="checkbox" id="open" th:field="*{open}" class="form-check-input">
+            </div>
+        </div>
+
+        <!--
+        * multi checkbox
+        - th:for="${#ids.prev('open')}"
+        - 멀티 체크박스는 같은 이름의 여러 체크박스를 만드는 것이 가능
+        - 반복해서 HTML 태그 생성시, 생성된 HTML 태그 속성에서 name 은 같아도 id 는 모두 달라야 함
+        - 따라서 타임리프는 체크박스를 each 루프 안에서 반복해서 만들 때 임의로 숫자를 추가함
+        -->
+        <div>
+            <div>등록 지역</div>
+            <div th:each="region : ${regions}" class="form-check form-check-inline">
+                <input type="checkbox" th:field="*{regions}" th:value="${region.key}" class="form-check-input">
+                <label th:for="${#ids.prev('regions')}"
+                       th:text="${region.value}" class="form-check-label">서울</label>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col">
                 <button class="w-100 btn btn-primary btn-lg" type="submit">상품 등록</button>
