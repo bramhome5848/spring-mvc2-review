@@ -127,7 +127,7 @@ public class ValidationItemControllerV2 {
      - 타입 오류로 바인딩 실패시 스프링은 FieldError 를 생성하면서 사용자가 입력한 값을 넣어두고 해당 오류를 BindingResult 에 담아 컨트롤러를 호출
      - 타입 오류 같은 바인딩 실패시에도 사용자의 오류 메시지를 정상 출력
      */
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult,
                             RedirectAttributes redirectAttributes, Model model) {
 
@@ -135,25 +135,117 @@ public class ValidationItemControllerV2 {
             bindingResult.addError(new FieldError("item", "itemName", item.getItemName(),
                     false, null, null, "상품 이름은 필수입니다."));
         }
-        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+        if(item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
             bindingResult.addError(new FieldError("item", "price", item.getPrice(),
                     false, null, null, "가격은 1,000 ~ 1,000,000 까지 허용합니다."));
         }
-        if (item.getQuantity() == null || item.getQuantity() > 10000) {
+        if(item.getQuantity() == null || item.getQuantity() > 9999) {
             bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(),
                     false, null, null, "수량은 최대 9,999 까지 허용합니다."));
         }
 
-        if (item.getPrice() != null && item.getQuantity() != null) {
+        if(item.getPrice() != null && item.getQuantity() != null) {
             int resultPrice = item.getPrice() * item.getQuantity();
             if (resultPrice < 10000) {
-                bindingResult.addError(new ObjectError("item", null, null, "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + resultPrice));
+                bindingResult.addError(new ObjectError("item", null, null,
+                        "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + resultPrice));
             }
         }
 
-
         if(bindingResult.hasErrors()) {
             log.info("errors =  {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    //@PostMapping("/add")
+    public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes) {
+
+        if(!StringUtils.hasText(item.getItemName())) {
+            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(),
+                    false, new String[]{"required.item.itemName"}, null, null));
+        }
+        if(item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+            bindingResult.addError(new FieldError("item", "price", item.getPrice(),
+                    false, new String[]{"range.item.price"}, new Object[]{1000, 1000000}, null));
+        }
+        if(item.getQuantity() == null || item.getQuantity() > 9999) {
+            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(),
+                    false, new String[]{"max.item.quantity"}, new Object[]{9999}, null));
+        }
+
+        if(item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if(resultPrice < 10000) {
+                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"},
+                        new Object[]{10000, resultPrice}, null));
+            }
+        }
+
+        if(bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    /**
+     * rejectValue() , reject() 를 사용해서 기존 코드 단순화
+     * 컨트롤러에서 BindingResult 는 검증해야 할 객체인 target 바로 다음 위치
+     -> BindingResult 는 이미 본인이 검증해야 할 객체인 target 을 알고 있음
+
+     * BindingResult 가 제공하는 rejectValue() , reject() 사용시
+     -> FieldError , ObjectError 를 직접 생성하지 않고, 깔끔하게 검증 오류를 다룰 수 있음
+
+     * rejectValue(), reject()
+     - field : 오류 필드명
+     - errorCode : 오류 코드(해당 코드는 메시지에 등록된 코드가 아님, messageResolver 를 위한 오류 코드)
+     - errorArgs : 오류 메시지에서 {0} 을 치환하기 위한 값
+     - defaultMessage : 오류 메시지를 찾을 수 없을 때 사용하는 기본 메시지
+
+     * 축약된 오류 코드
+     - FieldError() 를 직접 다룰 떄와 달리 오류코드를 간단히 입력 -> 그래도 오류 메시지를 찾음
+     - 해당 부분을 이해하기 위해서는 MessageCodesResolver 이해가 필요
+     */
+    @PostMapping("/add")
+    public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes) {
+
+        log.info("objectName={}", bindingResult.getObjectName());
+        log.info("target={}", bindingResult.getTarget());
+
+        //첫 if 문과 동일한 기능 -> empty, 공백 같은 단순한 기능만 제공
+        //ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required");
+
+        if(!StringUtils.hasText(item.getItemName())) {
+            bindingResult.rejectValue("itemName", "required");
+        }
+        if(item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+            bindingResult.rejectValue("price", "range", new Object[]{1000, 1000000}, null);
+        }
+        if(item.getQuantity() == null || item.getQuantity() > 9999) {
+            bindingResult.rejectValue("quantity", "max", new Object[]{9999}, null);
+        }
+
+        if(item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
             return "validation/v2/addForm";
         }
 
@@ -175,6 +267,5 @@ public class ValidationItemControllerV2 {
         itemRepository.update(itemId, item);
         return "redirect:/validation/v2/items/{itemId}";
     }
-
 }
 
