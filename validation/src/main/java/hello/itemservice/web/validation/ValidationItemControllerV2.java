@@ -10,6 +10,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -22,6 +24,17 @@ import java.util.List;
 public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
+
+    /**
+     * 검증기를 추가하면 해당 컨트롤러에서는 검증기를 자동으로 적용
+     * @InitBinder 해당 컨트롤러에만 영향을 준다.
+     */
+    @InitBinder
+    public void init(WebDataBinder dataBinder) {
+        log.info("init binder {}", dataBinder);
+        dataBinder.addValidators(itemValidator);
+    }
 
     @GetMapping
     public String items(Model model) {
@@ -217,7 +230,7 @@ public class ValidationItemControllerV2 {
      - FieldError() 를 직접 다룰 떄와 달리 오류코드를 간단히 입력 -> 그래도 오류 메시지를 찾음
      - 해당 부분을 이해하기 위해서는 MessageCodesResolver 이해가 필요
      */
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult,
                             RedirectAttributes redirectAttributes) {
 
@@ -244,7 +257,50 @@ public class ValidationItemControllerV2 {
             }
         }
 
-        if (bindingResult.hasErrors()) {
+        if(bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    //@PostMapping("/add")
+    public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes) {
+
+        itemValidator.validate(item, bindingResult);
+
+        if(bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    /**
+     * @Validated
+     - 검증기를 실행하는 어노테이션으로 해당 어노테이션 적용시 WebDataBinder 에 등록한 검증기를 찾아서 실행
+     - 여러 검증기를 등록할 경우 그 중에 어떤 검증기가 실행되어야 할지 구분이 필요 -> 이 때 supports() 가 사용
+
+     * 참고
+     - 검증시 @Validated @Valid 둘다 사용가능하다.
+     - javax.validation.@Valid 를 사용하려면 build.gradle 의존관계 추가가 필요 -
+     -> implementation 'org.springframework.boot:spring-boot-starter-validation'
+     -> @Validated 는 스프링 전용 검증 어노테이션, @Valid 는 자바 표준 검증 애노테이션
+     */
+    @PostMapping("/add")
+    public String addItem6(@Validated @ModelAttribute Item item, BindingResult bindingResult,
+                           RedirectAttributes redirectAttributes) {
+
+        if(bindingResult.hasErrors()) {
             log.info("errors={}", bindingResult);
             return "validation/v2/addForm";
         }
