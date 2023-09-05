@@ -23,19 +23,39 @@ import javax.validation.constraints.NotNull;
  - @NotNull -> Null 만 허용하지 않음, "" 이나 " " 은 허용,
  - @NotEmpty -> null 과 "" 둘 다 허용하지 않음, " " 은 허용
  - @NotBlank -> null 과 "" 과 " " 모두 허용하지 않음, 3개 중 validation 강도가 높음
+
+ * Bean Validation 에러 코드 예시(생성된 메시지 코드 순서)
+ - @NotBlank
+ -> NotBlank.item.itemName
+ -> NotBlank.itemName
+ -> NotBlank.java.lang.String
+ -> NotBlank
+
+ - @Range
+ -> Range.item.price
+ -> Range.price
+ -> Range.java.lang.Integer
+ -> Range
+
+ * Object Error -> @ScriptAssert() 를 사용
+ - ScriptAssert.item
+ - ScriptAssert
  */
 @Data
+//@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000")
 public class Item {
 
+    @NotNull(groups = UpdateCheck.class)
     private Long id;
-    @NotBlank
+    @NotBlank(groups = {SaveCheck.class, UpdateCheck.class})
     private String itemName;
 
-    @NotNull
-    @Range(min = 1000, max = 100000)
+    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+    @Range(min = 1000, max = 100000, groups = {SaveCheck.class, UpdateCheck.class})
     private Integer price;
 
-    @Max(9999)
+    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+    @Max(value = 9999, groups = SaveCheck.class)
     private Integer quantity;
 
     public Item() {
