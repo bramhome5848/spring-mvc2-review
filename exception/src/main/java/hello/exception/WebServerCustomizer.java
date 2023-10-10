@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
  -> new ErrorPage("/error"), 상태코드와 예외를 설정하지 않으면 기본 오류 페이지로 사용
  -> 서블릿 밖으로 예외가 발생하거나, response.sendError(...) 가 호출되면 모든 오류는 /error 를 호출하게 됨
  - BasicErrorController 라는 스프링 컨트롤러를 자동으로 등록
- - ErrorPage 에서 등록한 /error 를 매핑해서 처리하는 컨트롤러다.
+ - ErrorPage 에서 등록한 /error 를 매핑해서 처리하는 컨트롤러
 
  * 개발자는 오류 페이지만 등록
  - BasicErrorController 는 기본적인 로직이 모두 개발되어 있음
@@ -33,13 +33,25 @@ import org.springframework.http.HttpStatus;
  * 3. 적용 대상이 없을 때 뷰 이름(error)
  * resources/templates/error.html
 
- * 뷰 템플릿이 정적 리소스보다 우선순위가 높고, 404, 500처럼 구체적인 것이 5xx 처럼 덜 구체적인 것 보다 우선순위가 높다.
+ * 뷰 템플릿이 정적 리소스보다 우선순위가 높고, 404, 500처럼 구체적인 것이 5xx 처럼 덜 구체적인 것 보다 우선순위가 높음
+
+ ** API 처리 추가 내용 **
+ * 스프링 부트 기본 오류 처리
+ - 스프링에 구현되어 있는 BasicErrorController 사용
+ - API 예외 처리도 스프링 부트가 제공하는 기본 오류 방식을 사용(RuntimeException 발생시 WebServerCustomizer 없이 error page 를 처리한 것 처럼)
+ -> /error 와 동일한 경로를 처리하는 errorHtml() , error() 두 메서드
+
+ - errorHtml() : produces = MediaType.TEXT_HTML_VALUE
+ -> 클라이언트 요청의 Accept 해더 값이 text/html 인 경우에는 errorHtml() 을 호출해서 view 를 제공
+ - error()
+ -> text/html 이외의 경우에 호출되고 ResponseEntity 로 HTTP Body 에 JSON 데이터를 반환
  */
 //@Component
 public class WebServerCustomizer implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
 
     @Override
     public void customize(ConfigurableWebServerFactory factory) {
+        //해당 status or Exception 발생시, path(ErrorPageController) 로 재요청
         ErrorPage errorPage404 = new ErrorPage(HttpStatus.NOT_FOUND, "/error-page/404");
         ErrorPage errorPage500 = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/error-page/500");
 
