@@ -46,7 +46,7 @@ public class ServletUploadControllerV2 {
             log.info("name={}", part.getName());
             Collection<String> headerNames = part.getHeaderNames();
 
-            for (String headerName : headerNames) {
+            for(String headerName : headerNames) {
                 log.info("header {}: {}", headerName, part.getHeader(headerName));
             }
 
